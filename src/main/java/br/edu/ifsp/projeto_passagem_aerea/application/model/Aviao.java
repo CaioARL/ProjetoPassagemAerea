@@ -1,15 +1,24 @@
 package br.edu.ifsp.projeto_passagem_aerea.application.model;
 
-public class Aviao {
+public class Aviao extends Aeronave {
 
-	private String modelo;
+	private Passageiro[][] lugares;
 
-	public String getModelo() {
-		return modelo;
+	public Aviao(String modelo, int numFileiras, int totalAssentos) {
+		this.lugares = new Passageiro[numFileiras][totalAssentos];
+		this.setModelo(modelo);
 	}
 
-	public void setModelo(String modelo) {
-		this.modelo = modelo;
+	public Passageiro getPassageiro(int x, int y) {
+		return this.lugares[x][y];
+	}
+
+	public void setPassageiro(int x, int y, Passageiro passageiro) {
+		this.lugares[x][y] = passageiro;
 	}
 	
+	public Boolean verificaLugarOcupado(int x, int y) {
+		return this.lugares[x][y] != null;
+	}
+
 }
