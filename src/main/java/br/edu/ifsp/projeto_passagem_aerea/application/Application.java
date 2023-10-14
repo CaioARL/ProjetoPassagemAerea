@@ -13,6 +13,8 @@ public class Application {
 		Frame frame = new Frame();
 		frame.mainMenu();
 		
+		
+		System.out.println("Tchau");
 	}
 
 }
