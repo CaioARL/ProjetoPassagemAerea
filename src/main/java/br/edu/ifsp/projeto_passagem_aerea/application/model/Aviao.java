@@ -2,7 +2,7 @@ package br.edu.ifsp.projeto_passagem_aerea.application.model;
 
 public class Aviao extends Aeronave {
 
-	private Passageiro[][] lugares;
+	public Passageiro[][] lugares;
 
 	public Aviao(String modelo, int numFileiras, int totalAssentos) {
 		this.lugares = new Passageiro[numFileiras][totalAssentos];

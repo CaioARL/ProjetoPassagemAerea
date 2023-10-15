@@ -3,7 +3,7 @@ package br.edu.ifsp.projeto_passagem_aerea.application.model;
 public class Aeronave {
 
 	private String modelo;
-
+	
 	public Aeronave() {
 		
 	}
