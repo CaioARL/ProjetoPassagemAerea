@@ -1,9 +1,12 @@
 package br.edu.ifsp.projeto_passagem_aerea.application.model;
 
-public class Aviao extends Aeronave {
+import java.io.Serializable;
+
+@SuppressWarnings("serial")
+public class Aviao extends Aeronave implements Serializable{
 
 	public Passageiro[][] lugares;
-
+	
 	public Aviao(String modelo, int numFileiras, int totalAssentos) {
 		this.lugares = new Passageiro[numFileiras][totalAssentos];
 		this.setModelo(modelo);

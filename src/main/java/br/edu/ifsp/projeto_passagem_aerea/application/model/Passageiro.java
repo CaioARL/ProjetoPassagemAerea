@@ -1,6 +1,9 @@
 package br.edu.ifsp.projeto_passagem_aerea.application.model;
 
-public class Passageiro {
+import java.io.Serializable;
+
+@SuppressWarnings("serial")
+public class Passageiro implements Serializable{
 
 	private String nome;
 	private String cpf;

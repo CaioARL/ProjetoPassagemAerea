@@ -1,6 +1,9 @@
 package br.edu.ifsp.projeto_passagem_aerea.application.model;
 
-public class Aeronave {
+import java.io.Serializable;
+
+@SuppressWarnings("serial")
+public class Aeronave implements Serializable{
 
 	private String modelo;
 	

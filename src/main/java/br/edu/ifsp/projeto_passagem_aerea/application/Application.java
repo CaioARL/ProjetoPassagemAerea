@@ -2,7 +2,7 @@ package br.edu.ifsp.projeto_passagem_aerea.application;
 
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-import br.edu.ifsp.projeto_passagem_aerea.application.model.Frame;
+import br.edu.ifsp.projeto_passagem_aerea.application.service.ReservaService;
 
 
 @SpringBootApplication
@@ -10,9 +10,8 @@ public class Application {
 
 	public static void main(String[] args) throws Exception {
 		
-		Frame frame = new Frame();
-		frame.mainMenu();
-		
+		ReservaService reserva = new ReservaService();
+		reserva.mainMenu();
 		
 		System.out.println("Tchau");
 	}
