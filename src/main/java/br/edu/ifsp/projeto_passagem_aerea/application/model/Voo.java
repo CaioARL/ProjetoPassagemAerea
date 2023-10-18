@@ -6,11 +6,11 @@ import java.io.Serializable;
 public class Voo implements Serializable{
 
 	private Aviao aeronave;
-	private int nro;
+	private Integer nro;
 	private String data;
 	private String hora;
 	
-	public Voo(Aviao aeronave, int nro, String data, String hora) {
+	public Voo(Aviao aeronave, Integer nro, String data, String hora) {
 		this.aeronave = aeronave;
 		this.nro = nro;
 		this.data = data;
@@ -21,28 +21,28 @@ public class Voo implements Serializable{
 		return aeronave;
 	}
 
-	public int getNro() {
+	public void setAeronave(Aviao aeronave) {
+		this.aeronave = aeronave;
+	}
+
+	public Integer getNro() {
 		return nro;
+	}
+
+	public void setNro(Integer nro) {
+		this.nro = nro;
 	}
 
 	public String getData() {
 		return data;
 	}
 
-	public String getHora() {
-		return hora;
-	}
-
-	public void setAeronave(Aviao aeronave) {
-		this.aeronave = aeronave;
-	}
-
-	public void setNro(int nro) {
-		this.nro = nro;
-	}
-
 	public void setData(String data) {
 		this.data = data;
+	}
+
+	public String getHora() {
+		return hora;
 	}
 
 	public void setHora(String hora) {

@@ -1,5 +1,7 @@
 package br.edu.ifsp.projeto_passagem_aerea.application.service;
 
+import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Label;
 import java.awt.event.ActionEvent;
 import java.io.Serializable;
@@ -20,11 +22,9 @@ import br.edu.ifsp.projeto_passagem_aerea.application.model.Aeronave;
 import br.edu.ifsp.projeto_passagem_aerea.application.model.Aviao;
 import br.edu.ifsp.projeto_passagem_aerea.application.model.Passageiro;
 import br.edu.ifsp.projeto_passagem_aerea.application.model.Voo;
-import io.micrometer.common.util.StringUtils;
 
 @SuppressWarnings("serial")
 public class ReservaService extends JFrame implements Serializable{
-	private Aviao aviaoClass = new Aviao(null, 0, 0);
 	private Aeronave[] aeronaves =  new Aeronave[10];
 	private Aviao[] avioes = new Aviao[10];
 	private Voo[] voos =  new Voo[10];
@@ -35,11 +35,14 @@ public class ReservaService extends JFrame implements Serializable{
 	private void inicializaArrays() {
 		this.aeronaves[0] = new Aeronave(null);
 		this.avioes[0] = new Aviao(null, 0, 0);
-		this.voos[0] = new Voo(new Aviao(null, 0, 0), 0, null, null);
+		this.voos[0] = new Voo(new Aviao(null, 0, 0), null, null, null);
 	}
 	
 	public void mainMenu(){
-		inicializaArrays();
+		if(contadorAeronave==0 && contadorVoos==0) {
+			inicializaArrays();
+		}
+		
 		JFrame jframe = getFrame("Menu Principal");
 
 		// Parâmetros
@@ -133,21 +136,17 @@ public class ReservaService extends JFrame implements Serializable{
 
 		// Reserva
 		JButton jButtonReserva = getButton("Fazer Reserva", 100);
-
-		// Lugares vazios
-		JButton jButtonVazio = getButton("Consultar Lugares Vazios", 200);
-
-		// Reservas realizadas
-		JButton jButtonRealizadas = getButton("Consultar Reservas Realizadas", 300);
+		
+		// Lugares
+		JButton jButtonLugares = getButton("Verificar Lugares", 200);
 
 		// Voltar
-		JButton jButtonVoltar = getButton("Voltar", 400);
+		JButton jButtonVoltar = getButton("Voltar", 300);
 
 		// add buttons
 		jframe.setLayout(null);
 		jframe.add(jButtonReserva);
-		jframe.add(jButtonVazio);
-		jframe.add(jButtonRealizadas);
+		jframe.add(jButtonLugares);
 		jframe.add(jButtonVoltar);
 
 		// add functions
@@ -158,18 +157,10 @@ public class ReservaService extends JFrame implements Serializable{
 				e.printStackTrace();
 			}
 		});
-
-		jButtonVazio.addActionListener(action -> {
+		
+		jButtonLugares.addActionListener(action -> {
 			try {
-				this.redirect(action, jframe, "vazio");
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		});
-
-		jButtonRealizadas.addActionListener(action -> {
-			try {
-				this.redirect(action, jframe, "realizadas");
+				this.redirect(action, jframe, "lugares");
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -191,9 +182,9 @@ public class ReservaService extends JFrame implements Serializable{
 
 	    List<String> titles = new ArrayList<>();
 	    titles.add("Aeronaves cadastradas");
-		titles.add("Modelo aeronave: ");
-		titles.add("Numero de fileiras");
-		titles.add("Numero total de assentos");
+		titles.add("Modelo aeronave:");
+		titles.add("Numero de fileiras:");
+		titles.add("Numero total de assentos por fileira:");
 		
 		int cont = contadorAeronave;
 		if(contadorAeronave < 1) {
@@ -317,7 +308,7 @@ public class ReservaService extends JFrame implements Serializable{
 		JFrame jframe = getFrame("Fazer Reserva");
 		
 		// Reserva
-		List<String> titles = new ArrayList<String>();
+		List<String> titles = new ArrayList<>();
 		titles.add("Voos cadastrados: ");
 		titles.add("Nome: ");
 	    titles.add("CPF: ");
@@ -358,12 +349,13 @@ public class ReservaService extends JFrame implements Serializable{
 				int nroFileira = Integer.parseInt(modelosText.get(4).getText());
 				int nroAssento = Integer.parseInt(modelosText.get(5).getText());
 				
-				if(ObjectUtils.isEmpty(this.aviaoClass.getPassageiro(nroFileira, nroAssento))) {
-					Aviao aviaoEscolhido = getByVoo(new Voo(new Aviao(null, 0, 0), nroVoo, null, null));
-					int vooPosition = getVooByPosition(nroVoo);
-//					if(validateLugar(aviaoEscolhido, nroFileira, nroAssento)) {
-//						this.savePassageiro(vooPosition, nome, cpf, nroFileira, nroAssento);
-//					}
+				this.passageiro = new Passageiro(nome, cpf);
+				int posicaoAviao = getPosicaoAviaoByVoo(loadVoo(nroVoo));
+				
+				if(ObjectUtils.isEmpty(avioes[posicaoAviao].getPassageiro(nroFileira, nroAssento))) {
+					savePassageiro(jframe, passageiro, posicaoAviao, nroFileira, nroAssento);
+				}else {
+					error("Lugar ja se encontra ocupado");
 				}
 				
 			} catch (Exception e) {
@@ -372,14 +364,36 @@ public class ReservaService extends JFrame implements Serializable{
 		});
 	}
 
-	private void vazioMenu(){
-		JFrame jframe = getFrame("Consultar lugares vazios");
+	private void lugaresMenu() throws Exception{
+		JFrame jframe = getFrame("Consultar lugares", 1000);
+		
+		// Painel entrada
+	    JPanel modeloPanel = new JPanel();
+	    modeloPanel.add(new Label("Numero voo"));
+	    modeloPanel.add(new JTextField());
 
+	    modeloPanel.setLayout(new BoxLayout(modeloPanel, BoxLayout.Y_AXIS));
+	    modeloPanel.setBounds(250, 50, 300, 50);
+	    
+	    // Painel lugares
+	    JPanel matrizPanel = new JPanel();
+	    Label titulo = new Label("Preencha o numero do voo e selecione pesquisar para visualizar os lugares");
+	    titulo.setForeground(new Color(255,0,0));
+		matrizPanel.add(titulo);
+		matrizPanel.setBounds(100, 100, 600, 50);
+	    
+	    
+	    // Pesquisar
+	 	JButton jButtonPesquisar = getButton("Pesquisar", 800);
+	    
 		// Voltar
-		JButton jButtonVoltar = getButton("Voltar", 350);
+		JButton jButtonVoltar = getButton("Voltar", 900);
 
 		// add buttons
 		jframe.setLayout(null);
+		jframe.add(matrizPanel);
+		jframe.add(modeloPanel);
+		jframe.add(jButtonPesquisar);
 		jframe.add(jButtonVoltar);
 
 		// add functions
@@ -390,24 +404,39 @@ public class ReservaService extends JFrame implements Serializable{
 				e.printStackTrace();
 			}
 		});
-	}
-
-	private void realizadasMenu(){
-		JFrame jframe = getFrame("Consultar reservas realizadas");
-
-		// Voltar
-		JButton jButtonVoltar = getButton("Voltar", 350);
-
-		// add buttons
-		jframe.setLayout(null);
-		jframe.add(jButtonVoltar);
-
-		// add functions
-		jButtonVoltar.addActionListener(action -> {
+		
+		jButtonPesquisar.addActionListener(action -> {
 			try {
-				this.redirect(action, jframe, "voltar", "reserva");
+				matrizPanel.removeAll();
+				matrizPanel.setBounds(0, 120, 800, 700);
+				matrizPanel.revalidate();
+				
+				JTextField nroVoo = (JTextField)modeloPanel.getComponent(1);
+				Voo voo = loadVoo(Integer.parseInt(nroVoo.getText()));
+				
+				for (Passageiro[] fileiras : voo.getAeronave().getLugares()) {
+					for (Passageiro lugar : fileiras) {
+						if(!ObjectUtils.isEmpty(lugar) && lugar.getCpf()!= null) {
+							JButton button = new JButton();
+							button.setBackground(new Color(0, 255, 0));
+							button.setPreferredSize(new Dimension(12, 12));
+							matrizPanel.add(button);
+						}else {
+							JButton button = new JButton();
+							button.setBackground(new Color(255, 0, 0));
+							button.setPreferredSize(new Dimension(12, 12));
+							matrizPanel.add(button);
+						}
+						matrizPanel.add(new Label());
+					}
+					matrizPanel.revalidate();
+				}
+				
+			}catch (NumberFormatException e) {
+				errorOnTry("Valor não inserido");
+
 			} catch (Exception e) {
-				e.printStackTrace();
+				throw new Error("Erro no action Pesquisar: ", e);
 			}
 		});
 	}
@@ -439,10 +468,10 @@ public class ReservaService extends JFrame implements Serializable{
 			JTextField aeronavesExistentes = listAeronavesCadastradas();
 			textFields.add(aeronavesExistentes);
 			textFields.add(new JTextField(aeronave.getModelo()));
-			textFields.add(new JTextField(String.valueOf(aviao.lugares.length)));
+			textFields.add(new JTextField(String.valueOf(aviao.getLugares().length)));
 			int columns = 0;
-	        if (aviao.lugares.length > 0 && aviao.lugares[0] != null) {
-	            columns = aviao.lugares[0].length;
+	        if (aviao.getLugares().length > 0 && aviao.getLugares()[0] != null) {
+	            columns = aviao.getLugares()[0].length;
 	        }
 			textFields.add(new JTextField(String.valueOf(columns)));
 		}
@@ -469,10 +498,10 @@ public class ReservaService extends JFrame implements Serializable{
 		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 		
 		int tamanhoLista = textFields.size();
-		for (int i=0; i< tamanhoLista; i++) {
+		for (int i = 0; i < tamanhoLista; i++) {
 			panel.add(new Label(titles.get(i)));
 			panel.add(textFields.get(i));
-			panel.setBounds(250, posicao, 300, (int) (230 * (1.06 + ((double) tamanhoLista/100))));
+			panel.setBounds(250, posicao, 300, (int) (230 * (1.06 + ((double) tamanhoLista / 100))));
 			posicao += 5;
 		}
 
@@ -480,10 +509,15 @@ public class ReservaService extends JFrame implements Serializable{
 	}
 
 	private JFrame getFrame(String title) {
+		return this.getFrame(title, 600);
+	}
+	
+	private JFrame getFrame(String title, Integer altura) {
+		Integer height = altura;
 		JFrame jframe = new JFrame();
 		jframe.setTitle(title);
 		jframe.setVisible(true);
-		jframe.setSize(800, 600);
+		jframe.setSize(800, height);
 		jframe.setDefaultCloseOperation(EXIT_ON_CLOSE);
 		jframe.setResizable(false);
 		jframe.setLocationRelativeTo(null);
@@ -517,12 +551,8 @@ public class ReservaService extends JFrame implements Serializable{
 			doReservaMenu();
 			break;
 		}
-		case "vazio": {
-			vazioMenu();
-			break;
-		}
-		case "realizadas": {
-			realizadasMenu();
+		case "lugares": {
+			lugaresMenu();
 			break;
 		}
 		case "sair": {
@@ -595,13 +625,16 @@ public class ReservaService extends JFrame implements Serializable{
 		
 	}
 	
-	private void savePassageiro(JFrame jFrame, Passageiro newPassageiro, Voo newVoo) {
+	private void savePassageiro(JFrame jFrame, Passageiro newPassageiro, Integer posicaoVoo, int fileira, int assento) throws Exception {
 		try {
-			if(validadeBeforeSave(newVoo)) {
-				this.passageiro = newPassageiro;
+			if(Boolean.TRUE.equals(validadeBeforeSave(this.avioes[posicaoVoo], newPassageiro))) {
+				this.avioes[posicaoVoo].setPassageiro(fileira, assento, newPassageiro);
+				success(jFrame, "Passageiro registrado com sucesso", "doReserva");
+			}else {
+				error("Somente um cadastro por CPF");
 			}
 		} catch (Exception e) {
-			
+			throw new Exception("Erro no método savePassageiro: ", e);
 		}
 	}
 	
@@ -620,8 +653,13 @@ public class ReservaService extends JFrame implements Serializable{
 	    }
 	}
 	
-	private void error(String mensagem) throws Exception {
+	public void error(String mensagem) throws Exception {
 		this.error(mensagem, false, null);
+	}
+	
+	public void errorOnTry(String mensagem){
+		JFrame jFrame = new JFrame();
+		JOptionPane.showMessageDialog(jFrame, mensagem, "Erro", JOptionPane.ERROR_MESSAGE);
 	}
 	
 	private void error(String mensagem, Boolean redirect, String to) throws Exception {
@@ -641,22 +679,28 @@ public class ReservaService extends JFrame implements Serializable{
 		return null;
 	}
 	
-	private Aviao getByVoo(Voo voo) {
-		for (Voo vooSaved : this.voos) {
-			if (!ObjectUtils.isEmpty(vooSaved) && Objects.equals(vooSaved.getNro(), vooSaved.getNro())) {
-				return vooSaved.getAeronave();
+	private Integer getPosicaoAviaoByVoo(Voo voo) {
+		int cont = 0;
+
+		for (Aviao aviaoSaved : this.avioes) {
+			if (Objects.equals(voo.getAeronave().getModelo(), aviaoSaved.getModelo())) {
+				return cont;
 			}
+			cont++;
 		}
 		return null;
 	}
 	
-	private Integer getVooByPosition(int nroVoo) {
-		int cont = 0;
-		for (Voo vooSaved : this.voos) {
-			if(!ObjectUtils.isEmpty(vooSaved) && vooSaved.getNro() == nroVoo) {
-				return cont;
+	private Voo loadVoo(int nroVoo) throws Exception {
+		try {
+			for (Voo vooSaved : this.voos) {
+				if (vooSaved.getNro() == nroVoo) {
+					return vooSaved;
+				}
 			}
-			cont++;
+
+		} catch (Exception e) {
+			error("Voo não encontrado");
 		}
 		return null;
 	}
@@ -669,25 +713,31 @@ public class ReservaService extends JFrame implements Serializable{
 		return this.validadeBeforeSave(null, aviao, null);
 	}
 	
-	private Boolean validadeBeforeSave(Passageiro passageiro) {
-		return this.validadeBeforeSave(null, null, null);
+	private Boolean validadeBeforeSave(Aviao aviao, Passageiro passageiro) {
+		return this.validadeBeforeSave(null, aviao, passageiro);
 	}
 	
 	private Boolean validadeBeforeSave(Voo voo, Aviao aviao, Passageiro passageiro) {
-		if(!ObjectUtils.isEmpty(voo)) {
+		if (!ObjectUtils.isEmpty(voo)) {
 			for (Voo voosFromList : this.voos) {
-				if(!ObjectUtils.isEmpty(voosFromList) && Objects.equals(voosFromList.getNro(), voo.getNro())) {
+				if (!ObjectUtils.isEmpty(voosFromList) && Objects.equals(voosFromList.getNro(), voo.getNro())) {
 					return false;
 				}
 			}
 		}
-		if(!ObjectUtils.isEmpty(aviao)) {
+		if (!ObjectUtils.isEmpty(aviao) && ObjectUtils.isEmpty(passageiro)) {
 			for (Aviao avioesFromList : this.avioes) {
-				if(!ObjectUtils.isEmpty(avioesFromList) && Objects.equals(avioesFromList.getModelo(), aviao.getModelo())) {
+				if (!ObjectUtils.isEmpty(avioesFromList)
+						&& Objects.equals(avioesFromList.getModelo(), aviao.getModelo())) {
 					return false;
 				}
 			}
 		}
+
+		if (!ObjectUtils.isEmpty(passageiro)) {
+			return aviao.verificaLugarPorCpf(passageiro.getCpf());
+		}
+
 		return true;
 	}
 	
@@ -704,6 +754,7 @@ public class ReservaService extends JFrame implements Serializable{
 		}
 		JTextField aeronavesExistentes = new JTextField(aeronavesCadastradas);
 		aeronavesExistentes.setEditable(false);
+		aeronavesExistentes.setFocusable(false);
 		return aeronavesExistentes;
 	}
 	
@@ -711,7 +762,7 @@ public class ReservaService extends JFrame implements Serializable{
 		String voosCadastradas = "";
 
 		for (Voo vooSaved : this.voos) {
-			if (!ObjectUtils.isEmpty(vooSaved) && vooSaved.getNro() != 0) {
+			if (!ObjectUtils.isEmpty(vooSaved) && vooSaved.getNro() != null) {
 				voosCadastradas += vooSaved.getNro() + "; ";
 			}
 		}
@@ -720,6 +771,7 @@ public class ReservaService extends JFrame implements Serializable{
 		}
 		JTextField aeronavesExistentes = new JTextField(voosCadastradas);
 		aeronavesExistentes.setEditable(false);
+		aeronavesExistentes.setFocusable(false);
 		return aeronavesExistentes;
 	}
 }
