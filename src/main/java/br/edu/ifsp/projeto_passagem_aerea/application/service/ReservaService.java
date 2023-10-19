@@ -79,7 +79,7 @@ public class ReservaService extends JFrame implements Serializable{
 
 		jButtonSair.addActionListener(action -> {
 			try {
-				this.redirect(action, jframe, "sair");
+				jframe.dispose();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -553,10 +553,6 @@ public class ReservaService extends JFrame implements Serializable{
 		}
 		case "lugares": {
 			lugaresMenu();
-			break;
-		}
-		case "sair": {
-			jframe.dispose();
 			break;
 		}
 		case "voltar": {
