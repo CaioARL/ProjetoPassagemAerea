@@ -217,15 +217,19 @@ public class ReservaService extends JFrame implements Serializable{
 				e.printStackTrace();
 			}
 	    });
-
 	    
 		jButtonSalvar.addActionListener(action -> {
 			String modelo = modelosText.get(1).getText();
-			int nroFileira = Integer.parseInt(modelosText.get(2).getText());
-			int totalAssentos = Integer.parseInt(modelosText.get(3).getText());
-
+			int fileiras = Integer.parseInt(modelosText.get(2).getText());
+			int assentosPorFileira = Integer.parseInt(modelosText.get(3).getText());
+			String validaAssentos = validaAssentos(fileiras, assentosPorFileira);
+			
 			try {
-				this.saveAviao(jframe, new Aviao(modelo, nroFileira, totalAssentos));
+				if(validaAssentos == null) {
+					this.saveAviao(jframe, new Aviao(modelo, fileiras, assentosPorFileira));
+				}else {
+					error(validaAssentos);
+				}
 			} catch (NumberFormatException e) {
 				throw new Error("Erro ao inserir valores, por favor verifique os tipos: ", e);
 			}catch (Exception e) {
@@ -365,7 +369,7 @@ public class ReservaService extends JFrame implements Serializable{
 	}
 
 	private void lugaresMenu() throws Exception{
-		JFrame jframe = getFrame("Consultar lugares", 1000);
+		JFrame jframe = getFrame("Consultar lugares", 800);
 		
 		// Painel entrada
 	    JPanel modeloPanel = new JPanel();
@@ -384,10 +388,10 @@ public class ReservaService extends JFrame implements Serializable{
 	    
 	    
 	    // Pesquisar
-	 	JButton jButtonPesquisar = getButton("Pesquisar", 800);
+	 	JButton jButtonPesquisar = getButton("Pesquisar", 600);
 	    
 		// Voltar
-		JButton jButtonVoltar = getButton("Voltar", 900);
+		JButton jButtonVoltar = getButton("Voltar", 700);
 
 		// add buttons
 		jframe.setLayout(null);
@@ -408,7 +412,7 @@ public class ReservaService extends JFrame implements Serializable{
 		jButtonPesquisar.addActionListener(action -> {
 			try {
 				matrizPanel.removeAll();
-				matrizPanel.setBounds(0, 120, 800, 700);
+				matrizPanel.setBounds(0, 120, 800, 400);
 				matrizPanel.revalidate();
 				
 				JTextField nroVoo = (JTextField)modeloPanel.getComponent(1);
@@ -529,7 +533,7 @@ public class ReservaService extends JFrame implements Serializable{
 	}
 
 	private void redirect(ActionEvent e, JFrame jframe, String to, String backTo) throws Exception {
-		jframe.setVisible(false);
+		jframe.dispose();
 		switch (to) {
 		case "reserva": {
 			reservaMenu();
@@ -769,5 +773,16 @@ public class ReservaService extends JFrame implements Serializable{
 		aeronavesExistentes.setEditable(false);
 		aeronavesExistentes.setFocusable(false);
 		return aeronavesExistentes;
+	}
+	
+	private String validaAssentos(int fileiras, int assentosPorFileira) {
+		if(assentosPorFileira > 6) {
+			return "Número maximo de 6 assentos por fileira";
+		}if(fileiras > 30) {
+			return "Número maximo de 30 fileiras";
+		}
+		else {
+			return null;
+		}
 	}
 }
