@@ -1,14 +1,12 @@
 package br.edu.ifsp.projeto_passagem_aerea.application.model;
 
-import java.io.Serializable;
 import java.util.Objects;
 
 import org.springframework.util.ObjectUtils;
 
 import br.edu.ifsp.projeto_passagem_aerea.application.service.ReservaService;
 
-@SuppressWarnings("serial")
-public class Aviao extends Aeronave implements Serializable{
+public class Aviao extends Aeronave{
 	
 	private Passageiro[][] lugares;
 	
@@ -50,6 +48,14 @@ public class Aviao extends Aeronave implements Serializable{
 
 	public Passageiro[][] getLugares() {
 		return lugares;
+	}
+	
+	public int getFileiras() {
+		return this.lugares.length;
+	}
+	
+	public int getAssentos() {
+		return this.lugares[0].length;
 	}
 
 }

@@ -12,8 +12,6 @@ public class Application {
 		
 		ReservaService reserva = new ReservaService();
 		reserva.mainMenu();
-		
-		System.out.println("Tchau");
 	}
 
 }
