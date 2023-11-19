@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>br.edu.ifsp</groupId>
 	<artifactId>projeto_passagem_aerea.model</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>develop-SNAPSHOT</version>
 	<name>projeto_passagem_aerea.model</name>
 	<description>Sistema para reserva de passagens aéreas</description>
 	<properties>
